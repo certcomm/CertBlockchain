@@ -1,4 +1,4 @@
-var CThinBlockAnchor = artifacts.require("./CThinBlockAnchor.sol");
+var CThinBlockAnchorStorage = artifacts.require("./CThinBlockAnchorStorage.sol");
 module.exports = function(deployer) {
-  deployer.deploy(CThinBlockAnchor);
+  deployer.deploy(CThinBlockAnchorStorage);
 };
