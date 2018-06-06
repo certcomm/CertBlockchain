@@ -38,5 +38,18 @@ contract('CThinBlockAnchorStorage test', async (accounts) => {
      assert.equal(externalCThinBlockRef, "fooUri1");
      externalCThinBlockRef = await instance.getExternalCThinBlockRef(shardNum,cblockNum,"bitcoin");
      assert.equal(externalCThinBlockRef, "barUri1");
+  }),
+  it("should add cBlocknum 3 using real hash functions", async () => {
+     let instance = await CThinBlockAnchorStorage.deployed();
+     let cblockHash = web3.sha3("This is a test cblock");
+     let merkleRootHash = web3.sha3("This is test merkle");
+     let cblockNum = 3;
+     assert.isFalse(await instance.cThinBlockAnchorExists(shardNum,cblockNum));
+
+     await instance.addCThinBlockAnchor(shardNum,cblockNum, cblockHash, merkleRootHash);
+     assert.isTrue(await instance.cThinBlockAnchorExists(shardNum,cblockNum));
+     let cThinBlockAnchor = await instance.getCThinBlockAnchor(shardNum,cblockNum);
+     assert.equal(cThinBlockAnchor[0], cblockHash);
+     assert.equal(cThinBlockAnchor[1], merkleRootHash);
   })
 })
