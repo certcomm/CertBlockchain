@@ -38,6 +38,11 @@ contract CThinBlockAnchorStorage {
         cThinBlockAnchors[governor][shard][cblockNum].externalCThinBlockRefs[externalCThinBlockRefType] = externalCThinBlockRef;
     }
 
+    function cThinBlockAnchorExists(uint16 shard, uint16 cblockNum) public view returns (bool) {
+        address governor = msg.sender;
+        return cThinBlockAnchors[governor][shard][cblockNum].exists;
+    }
+
     function getCThinBlockAnchor(uint16 shard, uint16 cblockNum) public view returns (bytes32 cThinBlockHash, bytes32 merkleRootHash) {
         address governor = msg.sender;
         require(cThinBlockAnchors[governor][shard][cblockNum].exists);
