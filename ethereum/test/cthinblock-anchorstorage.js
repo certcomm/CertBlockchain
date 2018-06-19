@@ -1,8 +1,15 @@
+const CCRegistry = artifacts.require("CCRegistry")
 const CThinBlockAnchorStorage = artifacts.require("CThinBlockAnchorStorage")
 const shardNum = 0;
 contract('CThinBlockAnchorStorage test', async (accounts) => {
+  let registry = null;
+  let instance = null;
+  beforeEach('setup contract for each test', async() => {
+    registry = await CCRegistry.deployed();
+    instance = await CThinBlockAnchorStorage.new(registry.address);
+    registry.registerContract("CThinBlockAnchorStorage", instance.address)
+  }),
   it("should add cBlocknum 1", async () => {
-     let instance = await CThinBlockAnchorStorage.deployed();
      let cblockHash = "703836587B41B5B7326E63C8AB492F61";
      let merkleRootHash = "403836587B41B5B7326E63C8AB492F61";
      let cblockNum = 1;
@@ -17,9 +24,9 @@ contract('CThinBlockAnchorStorage test', async (accounts) => {
      await instance.addExternalCThinBlockRef(shardNum,cblockNum,"ipfs","fooUri1");
      let externalCThinBlockRef = await instance.getExternalCThinBlockRef(shardNum,cblockNum,"ipfs");
      assert.equal(externalCThinBlockRef, "fooUri1");
-  }),
+  })
+  ,
   it("should add cBlocknum 2", async () => {
-     let instance = await CThinBlockAnchorStorage.deployed();
      let cblockHash = "703836587B41B5B7326E63C8AB492F61";
      let merkleRootHash = "403836587B41B5B7326E63C8AB492F61";
      let cblockNum = 2;
@@ -40,7 +47,6 @@ contract('CThinBlockAnchorStorage test', async (accounts) => {
      assert.equal(externalCThinBlockRef, "barUri1");
   }),
   it("should add cBlocknum 3 using real hash functions", async () => {
-     let instance = await CThinBlockAnchorStorage.deployed();
      let cblockHash = web3.sha3("This is a test cblock");
      let merkleRootHash = web3.sha3("This is test merkle");
      let cblockNum = 3;

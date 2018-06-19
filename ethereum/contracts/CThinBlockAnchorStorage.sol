@@ -1,7 +1,8 @@
 pragma solidity ^0.4.4;
 
+import './CCTrustable.sol';
 
-contract CThinBlockAnchorStorage {
+contract CThinBlockAnchorStorage is CCTrustable {
     struct CThinBlockAnchor {
         bool exists;
         bytes32 cThinBlockHash;
@@ -12,7 +13,7 @@ contract CThinBlockAnchorStorage {
     //governor to shardNum to blockNum to anchor mappings
     mapping (address => mapping (uint16 => mapping(uint16 => CThinBlockAnchor))) cThinBlockAnchors;
 
-    constructor () public {
+    constructor (address _registryAddr) CCTrustable(_registryAddr) public {
     // constructor
     }
 
