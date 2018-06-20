@@ -27,6 +27,14 @@ contract CCTrustable is Ownable {
         require(registry.isTrustedContract(msg.sender));
         _;
     }
+
+    /**
+     * @dev Throws if called by any account other than the governor or trusted contract.
+     */
+    modifier onlyGovernorOrTrustedContract() {
+        require(registry.isGovernor(msg.sender)||registry.isTrustedContract(msg.sender));
+        _;
+    }
 }
 
 

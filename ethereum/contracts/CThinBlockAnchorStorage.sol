@@ -17,7 +17,7 @@ contract CThinBlockAnchorStorage is CCTrustable {
     // constructor
     }
 
-    function addCThinBlockAnchor(uint16 shard, uint16 cblockNum, bytes32 _cThinBlockHash, bytes32 _merkleRootHash) public {
+    function addCThinBlockAnchor(uint16 shard, uint16 cblockNum, bytes32 _cThinBlockHash, bytes32 _merkleRootHash) public onlyGovernor {
         //validate governor in Ecosystem contract
         address governor = msg.sender;
         require(!cThinBlockAnchorExists(shard, cblockNum));
@@ -28,28 +28,28 @@ contract CThinBlockAnchorStorage is CCTrustable {
         });
     }
 
-    function addExternalCThinBlockRef(uint16 shard, uint16 cblockNum, string externalCThinBlockRefType, string externalCThinBlockRef) public {
+    function addExternalCThinBlockRef(uint16 shard, uint16 cblockNum, string externalCThinBlockRefType, string externalCThinBlockRef) public onlyGovernor {
         address governor = msg.sender;
         require(cThinBlockAnchorExists(shard, cblockNum));
         require(bytes(cThinBlockAnchors[governor][shard][cblockNum].externalCThinBlockRefs[externalCThinBlockRefType]).length == 0);
         cThinBlockAnchors[governor][shard][cblockNum].externalCThinBlockRefs[externalCThinBlockRefType] = externalCThinBlockRef;
     }
 
-    function cThinBlockAnchorExists(uint16 shard, uint16 cblockNum) public view returns (bool) {
+    function cThinBlockAnchorExists(uint16 shard, uint16 cblockNum) public onlyGovernor view returns (bool)  {
         address governor = msg.sender;
         require(shard >= 0);
         require(cblockNum >= 1);
         return cThinBlockAnchors[governor][shard][cblockNum].exists;
     }
 
-    function getCThinBlockAnchor(uint16 shard, uint16 cblockNum) public view returns (bytes32 cThinBlockHash, bytes32 merkleRootHash) {
+    function getCThinBlockAnchor(uint16 shard, uint16 cblockNum) public onlyGovernor view returns (bytes32 cThinBlockHash, bytes32 merkleRootHash) {
         address governor = msg.sender;
         require(cThinBlockAnchorExists(shard, cblockNum));
         CThinBlockAnchor memory cThinBlockAnchor = cThinBlockAnchors[governor][shard][cblockNum];
         return (cThinBlockAnchor.cThinBlockHash,cThinBlockAnchor.merkleRootHash);
     }
 
-    function getExternalCThinBlockRef(uint16 shard, uint16 cblockNum, string externalCThinBlockRefType) public view returns (string externalCThinBlockRef) {
+    function getExternalCThinBlockRef(uint16 shard, uint16 cblockNum, string externalCThinBlockRefType) public onlyGovernor view returns (string externalCThinBlockRef) {
         address governor = msg.sender;
         require(cThinBlockAnchorExists(shard, cblockNum));
         require(bytes(cThinBlockAnchors[governor][shard][cblockNum].externalCThinBlockRefs[externalCThinBlockRefType]).length != 0);
