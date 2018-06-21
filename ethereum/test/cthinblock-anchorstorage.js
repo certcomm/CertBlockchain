@@ -51,8 +51,8 @@ contract('CThinBlockAnchorStorage test', async (accounts) => {
     assert.equal(externalCThinBlockRef, "barUri1");
   })
   ,it("should add cBlocknum 3 using real hash functions", async () => {
-    let cblockHash = web3.sha3("This is a test cblock");
-    let merkleRootHash = web3.sha3("This is test merkle");
+    let cblockHash = web3.sha3("This is a test cblock3");
+    let merkleRootHash = web3.sha3("This is test merkle3");
     let cblockNum = 3;
     assert.isFalse(await instance.cThinBlockAnchorExists(shardNum,cblockNum, {from: tmail21Governor}));
 
@@ -61,5 +61,29 @@ contract('CThinBlockAnchorStorage test', async (accounts) => {
     let cThinBlockAnchor = await instance.getCThinBlockAnchor(shardNum,cblockNum, {from: tmail21Governor});
     assert.equal(cThinBlockAnchor[0], cblockHash);
     assert.equal(cThinBlockAnchor[1], merkleRootHash);
+  })
+  ,it("should have access to data after governor address replace", async () => {
+    let fooGovernor = accounts[3];
+    let fooNewGovernor = accounts[4];
+    let fooDomainName="foo.com"
+    await registry.registerGovernor(fooDomainName, fooGovernor);
+
+    let cblockHash = web3.sha3("This is a test cblock4");
+    let merkleRootHash = web3.sha3("This is test merkle4");
+    let cblockNum = 4;
+    await instance.addCThinBlockAnchor(shardNum,cblockNum, cblockHash, merkleRootHash, {from: fooGovernor});
+    assert.isTrue(await instance.cThinBlockAnchorExists(shardNum,cblockNum, {from: fooGovernor}));
+    let cThinBlockAnchor = await instance.getCThinBlockAnchor(shardNum,cblockNum, {from: fooGovernor});
+    assert.equal(cThinBlockAnchor[0], cblockHash);
+    assert.equal(cThinBlockAnchor[1], merkleRootHash);
+    //replace governor address
+    await registry.replaceGovernorAddress(fooDomainName, fooNewGovernor);
+    assert.isTrue(await instance.cThinBlockAnchorExists(shardNum,cblockNum, {from: fooNewGovernor}));
+    cThinBlockAnchor = await instance.getCThinBlockAnchor(shardNum,cblockNum, {from: fooNewGovernor});
+    assert.equal(cThinBlockAnchor[0], cblockHash);
+    assert.equal(cThinBlockAnchor[1], merkleRootHash);
+
+    await registry.deregisterGovernor(fooDomainName);
+
   })
 })
