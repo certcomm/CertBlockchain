@@ -5,13 +5,13 @@ contract('CThinBlockAnchorStorage test', async (accounts) => {
   let registry = null;
   let instance = null;
   let tmail21Governor = accounts[1];
+  let tmail21DomainName="tmail21.com"
   beforeEach('setup contract for each test', async() => {
     registry = await CCRegistry.deployed();
-    console.log(registry.address)
     instance = await CThinBlockAnchorStorage.new(registry.address);
     await registry.registerContract("CThinBlockAnchorStorage", instance.address);
     if(!await registry.isGovernor(tmail21Governor)) {
-        await registry.registerGovernor(tmail21Governor);
+        await registry.registerGovernor(tmail21DomainName, tmail21Governor);
         assert.isTrue(await registry.isGovernor(tmail21Governor));
     }
   }),
