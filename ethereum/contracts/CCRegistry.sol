@@ -18,10 +18,13 @@ contract CCRegistry is Ownable {
 
     address ccOwner;
 
-    event StorageAdded(address indexed storageAddress, string name);
-    event StorageRemoved(address indexed storageAddress, string name);
-    event ContractRegistered(address indexed _contract, string _name);
-    event ContractUpgraded(address indexed successor, address indexed predecessor, string name);
+    event GovernorRegistered(string domainName, address indexed governorAddress);
+    event GovernorDeRegistered(string domainName, address indexed governorAddress);
+    event GovernorReplaced(string domainName, address indexed oldGovernorAddress, address indexed newGovernorAddress);
+    event ContractPermissionGranted(string called, string caller);
+    event ContractPermissionRevoked(string called, string caller);
+    event ContractRegistered(string name, address indexed contractAddress);
+    event ContractDeRegistered(string name, address indexed contractAddress);
 
     constructor () public {
         ccOwner = msg.sender;
@@ -29,13 +32,14 @@ contract CCRegistry is Ownable {
 
     /**
      * @dev Allows the current owner to add a new governor to the contract.
-     * @param newGovernor The address to add to governers.
+     * @param governorAddress The address to add to governers.
      */
-    function registerGovernor(string domainName, address newGovernor) public onlyOwner {
+    function registerGovernor(string domainName, address governorAddress) public onlyOwner {
         bytes32 domainHash = keccak256(domainName);
         require(domainHashToGovernor[domainHash] == address(0x0));
-        domainHashToGovernor[domainHash] = newGovernor;
-        governorToDomainHash[newGovernor] = domainHash;
+        domainHashToGovernor[domainHash] = governorAddress;
+        governorToDomainHash[governorAddress] = domainHash;
+        GovernorRegistered(domainName, governorAddress);
     }
     /**
      * @dev Allows the current owner to add a new governor to the contract.
@@ -48,6 +52,7 @@ contract CCRegistry is Ownable {
         domainHashToGovernor[domainHash] = newGovernor;
         governorToDomainHash[newGovernor] = domainHash;
         delete governorToDomainHash[oldGovernor];
+        GovernorReplaced(domainName, oldGovernor, newGovernor);
     }
 
     /**
@@ -60,6 +65,7 @@ contract CCRegistry is Ownable {
         address governorAddress = domainHashToGovernor[domainHash];
         delete governorToDomainHash[governorAddress];
         delete domainHashToGovernor[domainHash];
+        GovernorDeRegistered(domainName, governorAddress);
     }
 
     function registerContract(string name, address contractAddress) public onlyOwner {
@@ -71,6 +77,7 @@ contract CCRegistry is Ownable {
         }
         nameHashToContract[hash] = contractAddress;
         contractToNameHash[contractAddress] = hash;
+        ContractRegistered(name, contractAddress);
     }
 
     function deregisterContract(string name) public onlyOwner {
@@ -80,6 +87,7 @@ contract CCRegistry is Ownable {
         require(contractAddress != address(0x0));
         delete contractToNameHash[contractAddress];
         delete nameHashToContract[hash];
+        ContractDeRegistered(name, contractAddress);
     }
 
     function getContractAddr(string name) public view returns (address) {
@@ -96,6 +104,7 @@ contract CCRegistry is Ownable {
         bytes32 callerNameHash = keccak256(caller);
         bytes32 hash = keccak256(abi.encodePacked(calledNameHash, callerNameHash));
         contractPerms[hash] = true;
+        ContractPermissionGranted(called, caller);
     }
 
     function removePermittedContract(string called, string caller) public onlyOwner {
@@ -105,6 +114,7 @@ contract CCRegistry is Ownable {
         bytes32 callerNameHash = keccak256(caller);
         bytes32 hash = keccak256(abi.encodePacked(calledNameHash, callerNameHash));
         delete contractPerms[hash];
+        ContractPermissionRevoked(called, caller);
     }
 
     function isPermittedContract(address called, address caller) public view returns (bool) {
