@@ -1,22 +1,27 @@
 const CCRegistry = artifacts.require("CCRegistry")
 const CThinBlockAnchorStorage = artifacts.require("CThinBlockAnchorStorage")
+const CThinBlockAnchorOps = artifacts.require("CThinBlockAnchorOps")
 const shardNum = 0;
-contract('CThinBlockAnchorStorage test', async (accounts) => {
+contract('CThinBlockAnchorOps test', async (accounts) => {
   let registry = null;
   let instance = null;
   let tmail21Governor = accounts[1];
   let tmail21DomainName="tmail21.com"
   beforeEach('setup contract for each test', async() => {
     registry = await CCRegistry.deployed();
-    let newInstance = await CThinBlockAnchorStorage.new(registry.address);
-    await registry.registerContract("CThinBlockAnchorStorage", newInstance.address);
+    let storageInstance = await CThinBlockAnchorStorage.new(registry.address);
+    await registry.registerContract("CThinBlockAnchorStorage", storageInstance.address);
+    let opsInstance = await CThinBlockAnchorOps.new(registry.address);
+    await registry.registerContract("CThinBlockAnchorOps", opsInstance.address);
+    registry.addPermittedContract("CThinBlockAnchorStorage", "CThinBlockAnchorOps");
     if(!await registry.isGovernor(tmail21Governor)) {
         await registry.registerGovernor(tmail21DomainName, tmail21Governor);
         assert.isTrue(await registry.isGovernor(tmail21Governor));
     }
-    let cThinBlockAnchorStorageAddress = await registry.getContractAddr("CThinBlockAnchorStorage")
-    instance = CThinBlockAnchorStorage.at(cThinBlockAnchorStorageAddress);
-  }),
+    let cThinBlockAnchorOpsAddress = await registry.getContractAddr("CThinBlockAnchorOps")
+    instance = CThinBlockAnchorOps.at(cThinBlockAnchorOpsAddress);
+  })
+  ,
   it("should add cBlocknum 1", async () => {
     let cblockHash = "703836587B41B5B7326E63C8AB492F61";
     let merkleRootHash = "403836587B41B5B7326E63C8AB492F61";

@@ -3,19 +3,28 @@ pragma solidity ^0.4.4;
 import 'openzeppelin-solidity/contracts/ownership/Ownable.sol';
 
 contract CCRegistry is Ownable {
-    mapping (string => address) contractAddresses;
+    //1:1 mapping of contract name to address
+    mapping(bytes32 => address) nameHashToContract;
+    //1:1 mapping of contract address to name
+    mapping(address => bytes32) contractToNameHash;
+    //1:1 mapping of hash(called contractName, caller contract name)
+    mapping(bytes32 => bool) contractPerms;
 
-    mapping (address => bool) trustedContracts;
     // 1:1 map of governor address to domain name hash, this allows us to swap governor address in case of Private key loss
-    mapping (address => bytes32) governorToDomainHash;
+    mapping(address => bytes32) governorToDomainHash;
 
     // 1:1 map of domain name hash to governor address
-    mapping (bytes32 => address) domainHashToGovernor;
+    mapping(bytes32 => address) domainHashToGovernor;
 
-    address certcommOwner;
+    address ccOwner;
+
+    event StorageAdded(address indexed storageAddress, string name);
+    event StorageRemoved(address indexed storageAddress, string name);
+    event ContractRegistered(address indexed _contract, string _name);
+    event ContractUpgraded(address indexed successor, address indexed predecessor, string name);
 
     constructor () public {
-        certcommOwner = msg.sender;
+        ccOwner = msg.sender;
     }
 
     /**
@@ -53,25 +62,45 @@ contract CCRegistry is Ownable {
         delete domainHashToGovernor[domainHash];
     }
 
-    function registerContract(string _contractName, address _contractAddr) public onlyOwner {
-        require(_contractAddr != address(0x0));
-        contractAddresses[_contractName] = _contractAddr;
-        trustedContracts[_contractAddr] = true;
+    function registerContract(string name, address contractAddress) public onlyOwner {
+        require(bytes(name).length > 0);
+        require(contractAddress != address(0x0));
+        bytes32 hash = keccak256(name);
+        if (nameHashToContract[hash] != address(0x0)) {
+            deregisterContract(name);
+        }
+        nameHashToContract[hash] = contractAddress;
+        contractToNameHash[contractAddress] = hash;
     }
 
-    function deregisterContract(string _contractName) public onlyOwner {
-        require(contractAddresses[_contractName] != address(0x0));
-        delete trustedContracts[contractAddresses[_contractName]];
-        delete contractAddresses[_contractName];
+    function deregisterContract(string name) public onlyOwner {
+        require(bytes(name).length > 0);
+        bytes32 hash = keccak256(name);
+        address contractAddress = nameHashToContract[hash];
+        require(contractAddress != address(0x0));
+        delete contractToNameHash[contractAddress];
+        delete nameHashToContract[hash];
     }
 
-    function getContractAddr(string _contractName) public view returns (address) {
-        require(contractAddresses[_contractName] != address(0x0));
-        return contractAddresses[_contractName];
+    function getContractAddr(string name) public view returns (address) {
+        require(bytes(name).length > 0);
+        bytes32 hash = keccak256(name);
+        require(nameHashToContract[hash] != address(0x0));
+        return nameHashToContract[hash];
     }
 
-    function isTrustedContract(address _addr) public view returns (bool) {
-        return trustedContracts[_addr] == true;
+    function addPermittedContract(string called, string caller) public onlyOwner {
+        bytes32 calledNameHash = keccak256(called);
+        bytes32 callerNameHash = keccak256(caller);
+        bytes32 hash = keccak256(abi.encodePacked(calledNameHash, callerNameHash));
+        contractPerms[hash] = true;
+    }
+
+    function isPermittedContract(address called, address caller) public view returns (bool) {
+        bytes32 calledNameHash = contractToNameHash[called];
+        bytes32 callerNameHash = contractToNameHash[caller];
+        bytes32 hash = keccak256(abi.encodePacked(calledNameHash, callerNameHash));
+        return contractPerms[hash] == true;
     }
 
     function isGovernor(address _addr) public view returns (bool) {

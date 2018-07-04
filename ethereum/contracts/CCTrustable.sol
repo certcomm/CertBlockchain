@@ -12,27 +12,55 @@ contract CCTrustable is Ownable {
         require(_registryAddr != address(0x0));
         registry = CCRegistry(_registryAddr);
     }
+
+    function isOwner() private view returns (bool) {
+        return msg.sender == owner;
+    }
+
+    function isGovernor() private view returns (bool) {
+        return registry.isGovernor(msg.sender);
+    }
+
+    function isPermittedContract() private view returns (bool) {
+        return registry.isPermittedContract(address(this), msg.sender);
+    }
+
     /**
      * @dev Throws if called by any account other than the governor.
      */
     modifier onlyGovernor() {
-        require(registry.isGovernor(msg.sender));
+        require(isGovernor());
         _;
     }
 
     /**
-     * @dev Throws if called by any account other than the trusted contract.
+     * @dev Throws if called by anyone other than the permitted contracts.
      */
-    modifier onlyTrustedContract() {
-        require(registry.isTrustedContract(msg.sender));
+    modifier onlyPermittedContracts() {
+        require(isPermittedContract());
         _;
     }
 
     /**
-     * @dev Throws if called by any account other than the governor or trusted contract.
+     * @dev Throws if called by anyone other than owner, governor or permitted contracts.
      */
-    modifier onlyGovernorOrTrustedContract() {
-        require(registry.isGovernor(msg.sender)||registry.isTrustedContract(msg.sender));
+    modifier onlyOwnerOrGovernorOrPermittedContracts() {
+        require(isOwner() || isGovernor() || isPermittedContract());
+        _;
+    }
+
+    /**
+     * @dev Throws if called by anyone other than the owner or permitted contracts.
+     */
+    modifier onlyOwnerOrPermittedContracts() {
+        require(isOwner() || isPermittedContract());
+        _;
+    }
+    /**
+     * @dev Throws if called by anyone other than the owner or governor.
+     */
+    modifier onlyOwnerOrGovernor() {
+        require(isOwner() || isGovernor() );
         _;
     }
 }

@@ -7,7 +7,7 @@ contract CThinBlockAnchorStorage is CCTrustable {
         bool exists;
         bytes32 cThinBlockHash;
         bytes32 merkleRootHash;
-        mapping (string => string) externalCThinBlockRefs;
+        mapping (bytes32 => string) externalCThinBlockRefs;
     }
 
     //governor domain hash to shardNum to blockNum to anchor mappings
@@ -17,9 +17,8 @@ contract CThinBlockAnchorStorage is CCTrustable {
     // constructor
     }
 
-    function addCThinBlockAnchor(uint16 shard, uint16 cblockNum, bytes32 _cThinBlockHash, bytes32 _merkleRootHash) public onlyGovernor {
-        bytes32 governorDomainHash = registry.getGovernorDomainHash(msg.sender);
-        require(!cThinBlockAnchorExists(shard, cblockNum));
+    function addCThinBlockAnchor(bytes32 governorDomainHash, uint16 shard, uint16 cblockNum, bytes32 _cThinBlockHash, bytes32 _merkleRootHash) public onlyOwnerOrPermittedContracts {
+        require(!cThinBlockAnchorExists(governorDomainHash, shard, cblockNum));
         cThinBlockAnchors[governorDomainHash][shard][cblockNum] = CThinBlockAnchor({
             cThinBlockHash : _cThinBlockHash,
             merkleRootHash : _merkleRootHash,
@@ -27,31 +26,29 @@ contract CThinBlockAnchorStorage is CCTrustable {
         });
     }
 
-    function addExternalCThinBlockRef(uint16 shard, uint16 cblockNum, string externalCThinBlockRefType, string externalCThinBlockRef) public onlyGovernor {
-        require(cThinBlockAnchorExists(shard, cblockNum));
-        bytes32 governorDomainHash = registry.getGovernorDomainHash(msg.sender);
-        require(bytes(cThinBlockAnchors[governorDomainHash][shard][cblockNum].externalCThinBlockRefs[externalCThinBlockRefType]).length == 0);
-        cThinBlockAnchors[governorDomainHash][shard][cblockNum].externalCThinBlockRefs[externalCThinBlockRefType] = externalCThinBlockRef;
+    function addExternalCThinBlockRef(bytes32 governorDomainHash, uint16 shard, uint16 cblockNum, string externalCThinBlockRefType, string externalCThinBlockRef) public onlyOwnerOrPermittedContracts {
+        require(cThinBlockAnchorExists(governorDomainHash, shard, cblockNum));
+        bytes32 refTypeHash = keccak256(externalCThinBlockRefType);
+        require(bytes(cThinBlockAnchors[governorDomainHash][shard][cblockNum].externalCThinBlockRefs[refTypeHash]).length == 0);
+        cThinBlockAnchors[governorDomainHash][shard][cblockNum].externalCThinBlockRefs[refTypeHash] = externalCThinBlockRef;
     }
 
-    function cThinBlockAnchorExists(uint16 shard, uint16 cblockNum) public onlyGovernor view returns (bool)  {
+    function cThinBlockAnchorExists(bytes32 governorDomainHash, uint16 shard, uint16 cblockNum) public onlyOwnerOrPermittedContracts view returns (bool)  {
         require(shard >= 0);
         require(cblockNum >= 1);
-        bytes32 governorDomainHash = registry.getGovernorDomainHash(msg.sender);
         return cThinBlockAnchors[governorDomainHash][shard][cblockNum].exists;
     }
 
-    function getCThinBlockAnchor(uint16 shard, uint16 cblockNum) public onlyGovernor view returns (bytes32 cThinBlockHash, bytes32 merkleRootHash) {
-        require(cThinBlockAnchorExists(shard, cblockNum));
-        bytes32 governorDomainHash = registry.getGovernorDomainHash(msg.sender);
+    function getCThinBlockAnchor(bytes32 governorDomainHash, uint16 shard, uint16 cblockNum) public onlyOwnerOrPermittedContracts view returns (bytes32 cThinBlockHash, bytes32 merkleRootHash) {
+        require(cThinBlockAnchorExists(governorDomainHash, shard, cblockNum));
         CThinBlockAnchor memory cThinBlockAnchor = cThinBlockAnchors[governorDomainHash][shard][cblockNum];
         return (cThinBlockAnchor.cThinBlockHash,cThinBlockAnchor.merkleRootHash);
     }
 
-    function getExternalCThinBlockRef(uint16 shard, uint16 cblockNum, string externalCThinBlockRefType) public onlyGovernor view returns (string externalCThinBlockRef) {
-        require(cThinBlockAnchorExists(shard, cblockNum));
-        bytes32 governorDomainHash = registry.getGovernorDomainHash(msg.sender);
-        require(bytes(cThinBlockAnchors[governorDomainHash][shard][cblockNum].externalCThinBlockRefs[externalCThinBlockRefType]).length != 0);
-        return (cThinBlockAnchors[governorDomainHash][shard][cblockNum].externalCThinBlockRefs[externalCThinBlockRefType]);
+    function getExternalCThinBlockRef(bytes32 governorDomainHash, uint16 shard, uint16 cblockNum, string externalCThinBlockRefType) public onlyOwnerOrPermittedContracts view returns (string externalCThinBlockRef) {
+        require(cThinBlockAnchorExists(governorDomainHash, shard, cblockNum));
+        bytes32 refTypeHash = keccak256(externalCThinBlockRefType);
+        require(bytes(cThinBlockAnchors[governorDomainHash][shard][cblockNum].externalCThinBlockRefs[refTypeHash]).length != 0);
+        return (cThinBlockAnchors[governorDomainHash][shard][cblockNum].externalCThinBlockRefs[refTypeHash]);
     }
 }
