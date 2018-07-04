@@ -90,10 +90,21 @@ contract CCRegistry is Ownable {
     }
 
     function addPermittedContract(string called, string caller) public onlyOwner {
+        require(bytes(called).length > 0);
+        require(bytes(caller).length > 0);
         bytes32 calledNameHash = keccak256(called);
         bytes32 callerNameHash = keccak256(caller);
         bytes32 hash = keccak256(abi.encodePacked(calledNameHash, callerNameHash));
         contractPerms[hash] = true;
+    }
+
+    function removePermittedContract(string called, string caller) public onlyOwner {
+        require(bytes(called).length > 0);
+        require(bytes(caller).length > 0);
+        bytes32 calledNameHash = keccak256(called);
+        bytes32 callerNameHash = keccak256(caller);
+        bytes32 hash = keccak256(abi.encodePacked(calledNameHash, callerNameHash));
+        delete contractPerms[hash];
     }
 
     function isPermittedContract(address called, address caller) public view returns (bool) {

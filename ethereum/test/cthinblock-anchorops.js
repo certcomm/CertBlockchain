@@ -13,7 +13,7 @@ contract('CThinBlockAnchorOps test', async (accounts) => {
     await registry.registerContract("CThinBlockAnchorStorage", storageInstance.address);
     let opsInstance = await CThinBlockAnchorOps.new(registry.address);
     await registry.registerContract("CThinBlockAnchorOps", opsInstance.address);
-    registry.addPermittedContract("CThinBlockAnchorStorage", "CThinBlockAnchorOps");
+    await registry.addPermittedContract("CThinBlockAnchorStorage", "CThinBlockAnchorOps");
     if(!await registry.isGovernor(tmail21Governor)) {
         await registry.registerGovernor(tmail21DomainName, tmail21Governor);
         assert.isTrue(await registry.isGovernor(tmail21Governor));

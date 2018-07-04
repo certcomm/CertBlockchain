@@ -1,4 +1,6 @@
 const CCRegistry = artifacts.require("CCRegistry")
+const CThinBlockAnchorStorage = artifacts.require("CThinBlockAnchorStorage")
+const CThinBlockAnchorOps = artifacts.require("CThinBlockAnchorOps")
 contract('CCRegistry test', async (accounts) => {
   let registry = null;
   let tmail21Governor = accounts[1];
@@ -34,5 +36,33 @@ contract('CCRegistry test', async (accounts) => {
 
     await registry.deregisterGovernor(tmail21DomainName);
     assert.isFalse(await registry.isGovernor(tmail21NewGovernor));
+  })
+  ,it("should register contract", async () => {
+    let storageInstance = await CThinBlockAnchorStorage.new(registry.address);
+    await registry.registerContract("CThinBlockAnchorStorage", storageInstance.address);
+    let opsInstance = await CThinBlockAnchorOps.new(registry.address);
+    await registry.registerContract("CThinBlockAnchorOps", opsInstance.address);
+    assert.equal(await registry.getContractAddr("CThinBlockAnchorStorage"), storageInstance.address);
+    assert.equal(await registry.getContractAddr("CThinBlockAnchorOps"), opsInstance.address);
+    let opsInstanceV2 = await CThinBlockAnchorOps.new(registry.address);
+    await registry.registerContract("CThinBlockAnchorOps", opsInstanceV2.address);
+    assert.equal(await registry.getContractAddr("CThinBlockAnchorOps"), opsInstanceV2.address);
+  })
+  ,it("test contract permissions", async () => {
+    let storageInstance = await CThinBlockAnchorStorage.new(registry.address);
+    await registry.registerContract("CThinBlockAnchorStorage", storageInstance.address);
+    let opsInstance = await CThinBlockAnchorOps.new(registry.address);
+    await registry.registerContract("CThinBlockAnchorOps", opsInstance.address);
+
+    await registry.removePermittedContract("CThinBlockAnchorStorage", "CThinBlockAnchorOps");
+    assert.isFalse(await registry.isPermittedContract(storageInstance.address, opsInstance.address));
+    await registry.addPermittedContract("CThinBlockAnchorStorage", "CThinBlockAnchorOps");
+    assert.isTrue(await registry.isPermittedContract(storageInstance.address, opsInstance.address));
+    //register a new version of OPS contract
+    let opsInstanceV2 = await CThinBlockAnchorOps.new(registry.address);
+    await registry.registerContract("CThinBlockAnchorOps", opsInstanceV2.address);
+    assert.isFalse(await registry.isPermittedContract(storageInstance.address, opsInstance.address));
+    assert.isTrue(await registry.isPermittedContract(storageInstance.address, opsInstanceV2.address));
+
   })
 })
