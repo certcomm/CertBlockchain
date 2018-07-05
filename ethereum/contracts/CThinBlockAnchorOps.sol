@@ -4,6 +4,7 @@ import './CCTrustable.sol';
 import './CThinBlockAnchorStorage.sol';
 
 contract CThinBlockAnchorOps is CCTrustable {
+    event CThinBlockAnchorCreated(bytes32 governorDomainHash, uint16 shard, uint16 cblockNum);
 
     constructor (address _registryAddr) CCTrustable(_registryAddr) public {
     // constructor
@@ -16,6 +17,7 @@ contract CThinBlockAnchorOps is CCTrustable {
     function addCThinBlockAnchor(uint16 shard, uint16 cblockNum, bytes32 cThinBlockHash, bytes32 merkleRootHash) public onlyGovernor  {
         bytes32 governorDomainHash = registry.getGovernorDomainHash(msg.sender);
         getCThinBlockAnchorStorage().addCThinBlockAnchor(governorDomainHash, shard, cblockNum, cThinBlockHash, merkleRootHash);
+        CThinBlockAnchorCreated(governorDomainHash, shard, cblockNum);
     }
 
     function addExternalCThinBlockRef(uint16 shard, uint16 cblockNum, string externalCThinBlockRefType, string externalCThinBlockRef) public onlyGovernor {

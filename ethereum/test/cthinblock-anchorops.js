@@ -26,9 +26,14 @@ contract('CThinBlockAnchorOps test', async (accounts) => {
     let cblockHash = "703836587B41B5B7326E63C8AB492F61";
     let merkleRootHash = "403836587B41B5B7326E63C8AB492F61";
     let cblockNum = 1;
+    let watcher = instance.CThinBlockAnchorCreated();
     assert.isFalse(await instance.cThinBlockAnchorExists(shardNum,cblockNum, {from: tmail21Governor}));
     await instance.addCThinBlockAnchor(shardNum,cblockNum, cblockHash, merkleRootHash, {from: tmail21Governor});
     assert.isTrue(await instance.cThinBlockAnchorExists(shardNum,cblockNum, {from: tmail21Governor}));
+    events = await watcher.get();
+    assert.equal(events.length, 1);
+    assert.equal(events[0].args.shard.valueOf(), shardNum);
+    assert.equal(events[0].args.cblockNum.valueOf(), cblockNum);
     let cThinBlockAnchor = await instance.getCThinBlockAnchor(shardNum,cblockNum, {from: tmail21Governor});
     assert.equal(web3.toAscii(cThinBlockAnchor[0]), cblockHash);
     assert.equal(web3.toAscii(cThinBlockAnchor[1]), merkleRootHash);
