@@ -2,19 +2,31 @@ pragma solidity ^0.4.4;
 
 import './CCTrustable.sol';
 
-contract CThinBlockAnchorStorage is CCTrustable {
+interface ICThinBlockAnchorStorage {
+    function addCThinBlockAnchor(bytes32 governorDomainHash, uint16 shard, uint16 cblockNum, bytes32 _cThinBlockHash, bytes32 _merkleRootHash) public;
+
+    function addExternalCThinBlockRef(bytes32 governorDomainHash, uint16 shard, uint16 cblockNum, string externalCThinBlockRefType, string externalCThinBlockRef) public;
+
+    function cThinBlockAnchorExists(bytes32 governorDomainHash, uint16 shard, uint16 cblockNum) public view returns (bool);
+
+    function getCThinBlockAnchor(bytes32 governorDomainHash, uint16 shard, uint16 cblockNum) public view returns (bytes32 cThinBlockHash, bytes32 merkleRootHash);
+
+    function getExternalCThinBlockRef(bytes32 governorDomainHash, uint16 shard, uint16 cblockNum, string externalCThinBlockRefType) public view returns (string externalCThinBlockRef);
+}
+
+contract CThinBlockAnchorStorage is ICThinBlockAnchorStorage, CCTrustable {
     struct CThinBlockAnchor {
         bool exists;
         bytes32 cThinBlockHash;
         bytes32 merkleRootHash;
-        mapping (bytes32 => string) externalCThinBlockRefs;
+        mapping(bytes32 => string) externalCThinBlockRefs;
     }
 
     //governor domain hash to shardNum to blockNum to anchor mappings
-    mapping (bytes32 => mapping (uint16 => mapping(uint16 => CThinBlockAnchor))) cThinBlockAnchors;
+    mapping(bytes32 => mapping(uint16 => mapping(uint16 => CThinBlockAnchor))) cThinBlockAnchors;
 
     constructor (address _registryAddr) CCTrustable(_registryAddr) public {
-    // constructor
+        // constructor
     }
 
     function addCThinBlockAnchor(bytes32 governorDomainHash, uint16 shard, uint16 cblockNum, bytes32 _cThinBlockHash, bytes32 _merkleRootHash) public onlyOwnerOrPermittedContracts {
@@ -22,8 +34,8 @@ contract CThinBlockAnchorStorage is CCTrustable {
         cThinBlockAnchors[governorDomainHash][shard][cblockNum] = CThinBlockAnchor({
             cThinBlockHash : _cThinBlockHash,
             merkleRootHash : _merkleRootHash,
-            exists: true
-        });
+            exists : true
+            });
     }
 
     function addExternalCThinBlockRef(bytes32 governorDomainHash, uint16 shard, uint16 cblockNum, string externalCThinBlockRefType, string externalCThinBlockRef) public onlyOwnerOrPermittedContracts {
@@ -42,7 +54,7 @@ contract CThinBlockAnchorStorage is CCTrustable {
     function getCThinBlockAnchor(bytes32 governorDomainHash, uint16 shard, uint16 cblockNum) public onlyOwnerOrPermittedContracts view returns (bytes32 cThinBlockHash, bytes32 merkleRootHash) {
         require(cThinBlockAnchorExists(governorDomainHash, shard, cblockNum));
         CThinBlockAnchor memory cThinBlockAnchor = cThinBlockAnchors[governorDomainHash][shard][cblockNum];
-        return (cThinBlockAnchor.cThinBlockHash,cThinBlockAnchor.merkleRootHash);
+        return (cThinBlockAnchor.cThinBlockHash, cThinBlockAnchor.merkleRootHash);
     }
 
     function getExternalCThinBlockRef(bytes32 governorDomainHash, uint16 shard, uint16 cblockNum, string externalCThinBlockRefType) public onlyOwnerOrPermittedContracts view returns (string externalCThinBlockRef) {

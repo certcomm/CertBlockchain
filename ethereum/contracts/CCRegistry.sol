@@ -2,7 +2,14 @@ pragma solidity ^0.4.4;
 
 import 'openzeppelin-solidity/contracts/ownership/Ownable.sol';
 
-contract CCRegistry is Ownable {
+interface ImmutableRegistry {
+    function isGovernor(address _addr) public view returns (bool);
+    function getGovernorDomainHash(address _addr) public view returns (bytes32);
+    function isPermittedContract(address called, address caller) public view returns (bool);
+    function getContractAddr(string name) public view returns (address);
+}
+
+contract CCRegistry is ImmutableRegistry, Ownable {
     //1:1 mapping of contract name to address
     mapping(bytes32 => address) nameHashToContract;
     //1:1 mapping of contract address to name
@@ -39,7 +46,7 @@ contract CCRegistry is Ownable {
         require(domainHashToGovernor[domainHash] == address(0x0));
         domainHashToGovernor[domainHash] = governorAddress;
         governorToDomainHash[governorAddress] = domainHash;
-        GovernorRegistered(domainName, governorAddress);
+        emit GovernorRegistered(domainName, governorAddress);
     }
     /**
      * @dev Allows the current owner to add a new governor to the contract.
@@ -52,7 +59,7 @@ contract CCRegistry is Ownable {
         domainHashToGovernor[domainHash] = newGovernor;
         governorToDomainHash[newGovernor] = domainHash;
         delete governorToDomainHash[oldGovernor];
-        GovernorReplaced(domainName, oldGovernor, newGovernor);
+        emit GovernorReplaced(domainName, oldGovernor, newGovernor);
     }
 
     /**
@@ -65,7 +72,7 @@ contract CCRegistry is Ownable {
         address governorAddress = domainHashToGovernor[domainHash];
         delete governorToDomainHash[governorAddress];
         delete domainHashToGovernor[domainHash];
-        GovernorDeRegistered(domainName, governorAddress);
+        emit GovernorDeRegistered(domainName, governorAddress);
     }
 
     function registerContract(string name, address contractAddress) public onlyOwner {
@@ -77,7 +84,7 @@ contract CCRegistry is Ownable {
         }
         nameHashToContract[hash] = contractAddress;
         contractToNameHash[contractAddress] = hash;
-        ContractRegistered(name, contractAddress);
+        emit ContractRegistered(name, contractAddress);
     }
 
     function deregisterContract(string name) public onlyOwner {
@@ -87,14 +94,7 @@ contract CCRegistry is Ownable {
         require(contractAddress != address(0x0));
         delete contractToNameHash[contractAddress];
         delete nameHashToContract[hash];
-        ContractDeRegistered(name, contractAddress);
-    }
-
-    function getContractAddr(string name) public view returns (address) {
-        require(bytes(name).length > 0);
-        bytes32 hash = keccak256(name);
-        require(nameHashToContract[hash] != address(0x0));
-        return nameHashToContract[hash];
+        emit ContractDeRegistered(name, contractAddress);
     }
 
     function addPermittedContract(string called, string caller) public onlyOwner {
@@ -104,7 +104,7 @@ contract CCRegistry is Ownable {
         bytes32 callerNameHash = keccak256(caller);
         bytes32 hash = keccak256(abi.encodePacked(calledNameHash, callerNameHash));
         contractPerms[hash] = true;
-        ContractPermissionGranted(called, caller);
+        emit ContractPermissionGranted(called, caller);
     }
 
     function removePermittedContract(string called, string caller) public onlyOwner {
@@ -114,7 +114,14 @@ contract CCRegistry is Ownable {
         bytes32 callerNameHash = keccak256(caller);
         bytes32 hash = keccak256(abi.encodePacked(calledNameHash, callerNameHash));
         delete contractPerms[hash];
-        ContractPermissionRevoked(called, caller);
+        emit ContractPermissionRevoked(called, caller);
+    }
+
+    function getContractAddr(string name) public view returns (address) {
+        require(bytes(name).length > 0);
+        bytes32 hash = keccak256(name);
+        require(nameHashToContract[hash] != address(0x0));
+        return nameHashToContract[hash];
     }
 
     function isPermittedContract(address called, address caller) public view returns (bool) {

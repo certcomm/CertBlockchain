@@ -10,14 +10,14 @@ contract CThinBlockAnchorOps is CCTrustable {
     // constructor
     }
 
-    function getCThinBlockAnchorStorage() private view returns (CThinBlockAnchorStorage) {
-        return CThinBlockAnchorStorage(registry.getContractAddr("CThinBlockAnchorStorage"));
+    function getCThinBlockAnchorStorage() private view returns (ICThinBlockAnchorStorage) {
+        return ICThinBlockAnchorStorage(registry.getContractAddr("CThinBlockAnchorStorage"));
     }
 
     function addCThinBlockAnchor(uint16 shard, uint16 cblockNum, bytes32 cThinBlockHash, bytes32 merkleRootHash) public onlyGovernor  {
         bytes32 governorDomainHash = registry.getGovernorDomainHash(msg.sender);
         getCThinBlockAnchorStorage().addCThinBlockAnchor(governorDomainHash, shard, cblockNum, cThinBlockHash, merkleRootHash);
-        CThinBlockAnchorCreated(governorDomainHash, shard, cblockNum);
+        emit CThinBlockAnchorCreated(governorDomainHash, shard, cblockNum);
     }
 
     function addExternalCThinBlockRef(uint16 shard, uint16 cblockNum, string externalCThinBlockRefType, string externalCThinBlockRef) public onlyGovernor {
