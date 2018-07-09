@@ -3,15 +3,15 @@ pragma solidity ^0.4.4;
 import './CCTrustable.sol';
 
 interface ICThinBlockAnchorStorage {
-    function addCThinBlockAnchor(bytes32 governorDomainHash, uint16 shard, uint16 cblockNum, bytes32 _cThinBlockHash, bytes32 _merkleRootHash) public;
+    function addCThinBlockAnchor(bytes32 governorDomainHash, uint16 shard, uint16 cblockNum, bytes32 _cThinBlockHash, bytes32 _merkleRootHash) external;
 
-    function addExternalCThinBlockRef(bytes32 governorDomainHash, uint16 shard, uint16 cblockNum, string externalCThinBlockRefType, string externalCThinBlockRef) public;
+    function addExternalCThinBlockRef(bytes32 governorDomainHash, uint16 shard, uint16 cblockNum, string externalCThinBlockRefType, string externalCThinBlockRef) external;
 
-    function cThinBlockAnchorExists(bytes32 governorDomainHash, uint16 shard, uint16 cblockNum) public view returns (bool);
+    function cThinBlockAnchorExists(bytes32 governorDomainHash, uint16 shard, uint16 cblockNum) external view returns (bool);
 
-    function getCThinBlockAnchor(bytes32 governorDomainHash, uint16 shard, uint16 cblockNum) public view returns (bytes32 cThinBlockHash, bytes32 merkleRootHash);
+    function getCThinBlockAnchor(bytes32 governorDomainHash, uint16 shard, uint16 cblockNum) external view returns (bytes32 cThinBlockHash, bytes32 merkleRootHash);
 
-    function getExternalCThinBlockRef(bytes32 governorDomainHash, uint16 shard, uint16 cblockNum, string externalCThinBlockRefType) public view returns (string externalCThinBlockRef);
+    function getExternalCThinBlockRef(bytes32 governorDomainHash, uint16 shard, uint16 cblockNum, string externalCThinBlockRefType) external view returns (string externalCThinBlockRef);
 }
 
 contract CThinBlockAnchorStorage is ICThinBlockAnchorStorage, CCTrustable {
@@ -29,8 +29,8 @@ contract CThinBlockAnchorStorage is ICThinBlockAnchorStorage, CCTrustable {
         // constructor
     }
 
-    function addCThinBlockAnchor(bytes32 governorDomainHash, uint16 shard, uint16 cblockNum, bytes32 _cThinBlockHash, bytes32 _merkleRootHash) public onlyOwnerOrPermittedContracts {
-        require(!cThinBlockAnchorExists(governorDomainHash, shard, cblockNum));
+    function addCThinBlockAnchor(bytes32 governorDomainHash, uint16 shard, uint16 cblockNum, bytes32 _cThinBlockHash, bytes32 _merkleRootHash) external onlyOwnerOrPermittedContracts {
+        require(!_cThinBlockAnchorExists(governorDomainHash, shard, cblockNum));
         cThinBlockAnchors[governorDomainHash][shard][cblockNum] = CThinBlockAnchor({
             cThinBlockHash : _cThinBlockHash,
             merkleRootHash : _merkleRootHash,
@@ -38,28 +38,32 @@ contract CThinBlockAnchorStorage is ICThinBlockAnchorStorage, CCTrustable {
             });
     }
 
-    function addExternalCThinBlockRef(bytes32 governorDomainHash, uint16 shard, uint16 cblockNum, string externalCThinBlockRefType, string externalCThinBlockRef) public onlyOwnerOrPermittedContracts {
-        require(cThinBlockAnchorExists(governorDomainHash, shard, cblockNum));
-        bytes32 refTypeHash = keccak256(externalCThinBlockRefType);
+    function addExternalCThinBlockRef(bytes32 governorDomainHash, uint16 shard, uint16 cblockNum, string externalCThinBlockRefType, string externalCThinBlockRef) external onlyOwnerOrPermittedContracts {
+        require(_cThinBlockAnchorExists(governorDomainHash, shard, cblockNum));
+        bytes32 refTypeHash = keccak256(abi.encodePacked(externalCThinBlockRefType));
         require(bytes(cThinBlockAnchors[governorDomainHash][shard][cblockNum].externalCThinBlockRefs[refTypeHash]).length == 0);
         cThinBlockAnchors[governorDomainHash][shard][cblockNum].externalCThinBlockRefs[refTypeHash] = externalCThinBlockRef;
     }
 
-    function cThinBlockAnchorExists(bytes32 governorDomainHash, uint16 shard, uint16 cblockNum) public onlyOwnerOrPermittedContracts view returns (bool)  {
+    function _cThinBlockAnchorExists(bytes32 governorDomainHash, uint16 shard, uint16 cblockNum) private onlyOwnerOrPermittedContracts view returns (bool)  {
         require(shard >= 0);
         require(cblockNum >= 1);
         return cThinBlockAnchors[governorDomainHash][shard][cblockNum].exists;
     }
 
-    function getCThinBlockAnchor(bytes32 governorDomainHash, uint16 shard, uint16 cblockNum) public onlyOwnerOrPermittedContracts view returns (bytes32 cThinBlockHash, bytes32 merkleRootHash) {
-        require(cThinBlockAnchorExists(governorDomainHash, shard, cblockNum));
+    function cThinBlockAnchorExists(bytes32 governorDomainHash, uint16 shard, uint16 cblockNum) external onlyOwnerOrPermittedContracts view returns (bool)  {
+        return _cThinBlockAnchorExists(governorDomainHash, shard, cblockNum);
+    }
+
+    function getCThinBlockAnchor(bytes32 governorDomainHash, uint16 shard, uint16 cblockNum) external onlyOwnerOrPermittedContracts view returns (bytes32 cThinBlockHash, bytes32 merkleRootHash) {
+        require(_cThinBlockAnchorExists(governorDomainHash, shard, cblockNum));
         CThinBlockAnchor memory cThinBlockAnchor = cThinBlockAnchors[governorDomainHash][shard][cblockNum];
         return (cThinBlockAnchor.cThinBlockHash, cThinBlockAnchor.merkleRootHash);
     }
 
-    function getExternalCThinBlockRef(bytes32 governorDomainHash, uint16 shard, uint16 cblockNum, string externalCThinBlockRefType) public onlyOwnerOrPermittedContracts view returns (string externalCThinBlockRef) {
-        require(cThinBlockAnchorExists(governorDomainHash, shard, cblockNum));
-        bytes32 refTypeHash = keccak256(externalCThinBlockRefType);
+    function getExternalCThinBlockRef(bytes32 governorDomainHash, uint16 shard, uint16 cblockNum, string externalCThinBlockRefType) external onlyOwnerOrPermittedContracts view returns (string externalCThinBlockRef) {
+        require(_cThinBlockAnchorExists(governorDomainHash, shard, cblockNum));
+        bytes32 refTypeHash = keccak256(abi.encodePacked(externalCThinBlockRefType));
         require(bytes(cThinBlockAnchors[governorDomainHash][shard][cblockNum].externalCThinBlockRefs[refTypeHash]).length != 0);
         return (cThinBlockAnchors[governorDomainHash][shard][cblockNum].externalCThinBlockRefs[refTypeHash]);
     }

@@ -3,10 +3,10 @@ pragma solidity ^0.4.4;
 import 'openzeppelin-solidity/contracts/ownership/Ownable.sol';
 
 interface ImmutableRegistry {
-    function isGovernor(address _addr) public view returns (bool);
-    function getGovernorDomainHash(address _addr) public view returns (bytes32);
-    function isPermittedContract(address called, address caller) public view returns (bool);
-    function getContractAddr(string name) public view returns (address);
+    function isGovernor(address _addr) external view returns (bool);
+    function getGovernorDomainHash(address _addr) external view returns (bytes32);
+    function isPermittedContract(address called, address caller) external view returns (bool);
+    function getContractAddr(string name) external view returns (address);
 }
 
 contract CCRegistry is ImmutableRegistry, Ownable {
@@ -42,7 +42,7 @@ contract CCRegistry is ImmutableRegistry, Ownable {
      * @param governorAddress The address to add to governers.
      */
     function registerGovernor(string domainName, address governorAddress) public onlyOwner {
-        bytes32 domainHash = keccak256(domainName);
+        bytes32 domainHash = keccak256(abi.encodePacked(domainName));
         require(domainHashToGovernor[domainHash] == address(0x0));
         domainHashToGovernor[domainHash] = governorAddress;
         governorToDomainHash[governorAddress] = domainHash;
@@ -53,7 +53,7 @@ contract CCRegistry is ImmutableRegistry, Ownable {
      * @param newGovernor The address to add to governers.
      */
     function replaceGovernorAddress(string domainName, address newGovernor) public onlyOwner {
-        bytes32 domainHash = keccak256(domainName);
+        bytes32 domainHash = keccak256(abi.encodePacked(domainName));
         require(domainHashToGovernor[domainHash] != address(0x0));
         address oldGovernor = domainHashToGovernor[domainHash];
         domainHashToGovernor[domainHash] = newGovernor;
@@ -67,7 +67,7 @@ contract CCRegistry is ImmutableRegistry, Ownable {
      * @param domainName The domainName to remove from governers.
      */
     function deregisterGovernor(string domainName) public onlyOwner {
-        bytes32 domainHash = keccak256(domainName);
+        bytes32 domainHash = keccak256(abi.encodePacked(domainName));
         require(domainHashToGovernor[domainHash] != address(0x0));
         address governorAddress = domainHashToGovernor[domainHash];
         delete governorToDomainHash[governorAddress];
@@ -78,7 +78,7 @@ contract CCRegistry is ImmutableRegistry, Ownable {
     function registerContract(string name, address contractAddress) public onlyOwner {
         require(bytes(name).length > 0);
         require(contractAddress != address(0x0));
-        bytes32 hash = keccak256(name);
+        bytes32 hash = keccak256(abi.encodePacked(name));
         if (nameHashToContract[hash] != address(0x0)) {
             deregisterContract(name);
         }
@@ -89,7 +89,7 @@ contract CCRegistry is ImmutableRegistry, Ownable {
 
     function deregisterContract(string name) public onlyOwner {
         require(bytes(name).length > 0);
-        bytes32 hash = keccak256(name);
+        bytes32 hash = keccak256(abi.encodePacked(name));
         address contractAddress = nameHashToContract[hash];
         require(contractAddress != address(0x0));
         delete contractToNameHash[contractAddress];
@@ -100,8 +100,8 @@ contract CCRegistry is ImmutableRegistry, Ownable {
     function addPermittedContract(string called, string caller) public onlyOwner {
         require(bytes(called).length > 0);
         require(bytes(caller).length > 0);
-        bytes32 calledNameHash = keccak256(called);
-        bytes32 callerNameHash = keccak256(caller);
+        bytes32 calledNameHash = keccak256(abi.encodePacked(called));
+        bytes32 callerNameHash = keccak256(abi.encodePacked(caller));
         bytes32 hash = keccak256(abi.encodePacked(calledNameHash, callerNameHash));
         contractPerms[hash] = true;
         emit ContractPermissionGranted(called, caller);
@@ -110,33 +110,33 @@ contract CCRegistry is ImmutableRegistry, Ownable {
     function removePermittedContract(string called, string caller) public onlyOwner {
         require(bytes(called).length > 0);
         require(bytes(caller).length > 0);
-        bytes32 calledNameHash = keccak256(called);
-        bytes32 callerNameHash = keccak256(caller);
+        bytes32 calledNameHash = keccak256(abi.encodePacked(called));
+        bytes32 callerNameHash = keccak256(abi.encodePacked(caller));
         bytes32 hash = keccak256(abi.encodePacked(calledNameHash, callerNameHash));
         delete contractPerms[hash];
         emit ContractPermissionRevoked(called, caller);
     }
 
-    function getContractAddr(string name) public view returns (address) {
+    function getContractAddr(string name) external view returns (address) {
         require(bytes(name).length > 0);
-        bytes32 hash = keccak256(name);
+        bytes32 hash = keccak256(abi.encodePacked(name));
         require(nameHashToContract[hash] != address(0x0));
         return nameHashToContract[hash];
     }
 
-    function isPermittedContract(address called, address caller) public view returns (bool) {
+    function isPermittedContract(address called, address caller) external view returns (bool) {
         bytes32 calledNameHash = contractToNameHash[called];
         bytes32 callerNameHash = contractToNameHash[caller];
         bytes32 hash = keccak256(abi.encodePacked(calledNameHash, callerNameHash));
         return contractPerms[hash] == true;
     }
 
-    function isGovernor(address _addr) public view returns (bool) {
+    function isGovernor(address _addr) external view returns (bool) {
         bytes32 domainHash = governorToDomainHash[_addr];
         return domainHash[0] != 0;
     }
 
-    function getGovernorDomainHash(address _addr) public view returns (bytes32) {
+    function getGovernorDomainHash(address _addr) external view returns (bytes32) {
         bytes32 domainHash = governorToDomainHash[_addr];
         require(domainHash[0] != 0);
         return governorToDomainHash[_addr];
