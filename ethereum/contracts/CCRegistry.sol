@@ -42,6 +42,8 @@ contract CCRegistry is ImmutableRegistry, Ownable {
      * @param governorAddress The address to add to governers.
      */
     function registerGovernor(string domainName, address governorAddress) public onlyOwner {
+        require(bytes(domainName).length > 0);
+        require(governorAddress != address(0x0));
         bytes32 domainHash = keccak256(abi.encodePacked(domainName));
         require(domainHashToGovernor[domainHash] == address(0x0));
         domainHashToGovernor[domainHash] = governorAddress;
@@ -53,6 +55,8 @@ contract CCRegistry is ImmutableRegistry, Ownable {
      * @param newGovernor The address to add to governers.
      */
     function replaceGovernorAddress(string domainName, address newGovernor) public onlyOwner {
+        require(bytes(domainName).length > 0);
+        require(newGovernor != address(0x0));
         bytes32 domainHash = keccak256(abi.encodePacked(domainName));
         require(domainHashToGovernor[domainHash] != address(0x0));
         address oldGovernor = domainHashToGovernor[domainHash];
@@ -67,6 +71,7 @@ contract CCRegistry is ImmutableRegistry, Ownable {
      * @param domainName The domainName to remove from governers.
      */
     function deregisterGovernor(string domainName) public onlyOwner {
+        require(bytes(domainName).length > 0);
         bytes32 domainHash = keccak256(abi.encodePacked(domainName));
         require(domainHashToGovernor[domainHash] != address(0x0));
         address governorAddress = domainHashToGovernor[domainHash];
@@ -125,6 +130,8 @@ contract CCRegistry is ImmutableRegistry, Ownable {
     }
 
     function isPermittedContract(address called, address caller) external view returns (bool) {
+        require(called != address(0x0));
+        require(caller != address(0x0));
         bytes32 calledNameHash = contractToNameHash[called];
         bytes32 callerNameHash = contractToNameHash[caller];
         bytes32 hash = keccak256(abi.encodePacked(calledNameHash, callerNameHash));
@@ -132,11 +139,13 @@ contract CCRegistry is ImmutableRegistry, Ownable {
     }
 
     function isGovernor(address _addr) external view returns (bool) {
+        require(_addr != address(0x0));
         bytes32 domainHash = governorToDomainHash[_addr];
         return domainHash[0] != 0;
     }
 
     function getGovernorDomainHash(address _addr) external view returns (bytes32) {
+        require(_addr != address(0x0));
         bytes32 domainHash = governorToDomainHash[_addr];
         require(domainHash[0] != 0);
         return governorToDomainHash[_addr];
