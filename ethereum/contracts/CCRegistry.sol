@@ -11,19 +11,17 @@ interface ImmutableRegistry {
 
 contract CCRegistry is ImmutableRegistry, Ownable {
     //1:1 mapping of contract name to address
-    mapping(bytes32 => address) nameHashToContract;
+    mapping(bytes32 => address) private nameHashToContract;
     //1:1 mapping of contract address to name
-    mapping(address => bytes32) contractToNameHash;
+    mapping(address => bytes32) private contractToNameHash;
     //1:1 mapping of hash(called contractName, caller contract name)
-    mapping(bytes32 => bool) contractPerms;
+    mapping(bytes32 => bool) private contractPerms;
 
     // 1:1 map of governor address to domain name hash, this allows us to swap governor address in case of Private key loss
-    mapping(address => bytes32) governorToDomainHash;
+    mapping(address => bytes32) private governorToDomainHash;
 
     // 1:1 map of domain name hash to governor address
-    mapping(bytes32 => address) domainHashToGovernor;
-
-    address ccOwner;
+    mapping(bytes32 => address) private domainHashToGovernor;
 
     event GovernorRegistered(string domainName, address indexed governorAddress);
     event GovernorDeRegistered(string domainName, address indexed governorAddress);
@@ -34,7 +32,6 @@ contract CCRegistry is ImmutableRegistry, Ownable {
     event ContractDeRegistered(string name, address indexed contractAddress);
 
     constructor () public {
-        ccOwner = msg.sender;
     }
 
     /**

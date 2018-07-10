@@ -23,7 +23,7 @@ contract CThinBlockAnchorStorage is ICThinBlockAnchorStorage, CCTrustable {
     }
 
     //governor domain hash to shardNum to blockNum to anchor mappings
-    mapping(bytes32 => mapping(uint16 => mapping(uint16 => CThinBlockAnchor))) cThinBlockAnchors;
+    mapping(bytes32 => mapping(uint16 => mapping(uint16 => CThinBlockAnchor))) private cThinBlockAnchors;
 
     constructor (address _registryAddr) CCTrustable(_registryAddr) public {
         // constructor

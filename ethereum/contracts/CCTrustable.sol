@@ -6,7 +6,7 @@ import './CCRegistry.sol';
 
 
 contract CCTrustable is Ownable {
-    ImmutableRegistry registry;
+    ImmutableRegistry internal registry;
 
     constructor (address _registryAddr) public {
         require(_registryAddr != address(0x0));

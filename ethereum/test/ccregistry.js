@@ -21,8 +21,6 @@ contract('CCRegistry test', async (accounts) => {
     assert.equal(events[0].args.domainName.valueOf(), tmail21DomainName);
     assert.equal(events[0].args.governorAddress.valueOf(), tmail21Governor);
     await registry.registerGovernor(fooDomainName, fooGovernor);
-    console.log(await registry.getGovernorDomainHash(tmail21Governor));
-    console.log(await registry.getGovernorDomainHash(fooGovernor));
     assert.isTrue(await registry.isGovernor(tmail21Governor));
     assert.isTrue(await registry.isGovernor(fooGovernor));
     await registry.deregisterGovernor(tmail21DomainName);
