@@ -25,10 +25,6 @@ contract CThinBlockAnchorStorage is ICThinBlockAnchorStorage, CCTrustable {
     //governor domain hash to shardNum to blockNum to anchor mappings
     mapping(bytes32 => mapping(uint16 => mapping(uint16 => CThinBlockAnchor))) private cThinBlockAnchors;
 
-    constructor (address _registryAddr) CCTrustable(_registryAddr) public {
-        // constructor
-    }
-
     function addCThinBlockAnchor(bytes32 governorDomainHash, uint16 shard, uint16 cblockNum, bytes32 _cThinBlockHash, bytes32 _merkleRootHash) external onlyOwnerOrPermittedContracts {
         require(!_cThinBlockAnchorExists(governorDomainHash, shard, cblockNum));
         cThinBlockAnchors[governorDomainHash][shard][cblockNum] = CThinBlockAnchor({

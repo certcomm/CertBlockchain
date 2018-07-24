@@ -14,5 +14,8 @@
   "license": "ISC",
   "dependencies": {
     "openzeppelin-solidity": "1.10.0"
+  },
+  "devDependencies": {
+    "truffle-wallet-provider": "0.0.5"
   }
 }

@@ -6,11 +6,15 @@ import './CCRegistry.sol';
 
 
 contract CCTrustable is Ownable {
-    ImmutableRegistry internal registry;
+    address internal registryAddr;
 
-    constructor (address _registryAddr) public {
+    function injectRegistry(address _registryAddr) public onlyOwner {
         require(_registryAddr != address(0x0));
-        registry = ImmutableRegistry(_registryAddr);
+        registryAddr = _registryAddr;
+    }
+
+    function getRegistry() internal view returns (ImmutableRegistry) {
+        return ImmutableRegistry(registryAddr);
     }
 
     function isOwner() private view returns (bool) {
@@ -18,11 +22,11 @@ contract CCTrustable is Ownable {
     }
 
     function isGovernor() private view returns (bool) {
-        return registry.isGovernor(msg.sender);
+        return getRegistry().isGovernor(msg.sender);
     }
 
     function isPermittedContract() private view returns (bool) {
-        return registry.isPermittedContract(address(this), msg.sender);
+        return getRegistry().isPermittedContract(address(this), msg.sender);
     }
 
     /**
