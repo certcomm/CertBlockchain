@@ -1,8 +1,7 @@
 var CCRegistry = artifacts.require("./CCRegistry.sol");
 var CThinBlockAnchorStorage = artifacts.require("./CThinBlockAnchorStorage.sol");
 var CThinBlockAnchorOps = artifacts.require("./CThinBlockAnchorOps.sol");
-module.exports = function(deployer) {
-  const setupRegistry = async() => {
+async function setupRegistry(deployer) {
     await deployer.deploy(CCRegistry);
     await deployer.deploy(CThinBlockAnchorStorage);
     await deployer.deploy(CThinBlockAnchorOps);
@@ -17,9 +16,14 @@ module.exports = function(deployer) {
     await registry.registerContract("CThinBlockAnchorStorage", cthinBlockAnchorStorage.address);
     await registry.registerContract("CThinBlockAnchorOps", cthinBlockAnchorOps.address);
     await registry.addPermittedContract("CThinBlockAnchorStorage", "CThinBlockAnchorOps");
-
-  }
-  setupRegistry();
+}
+module.exports = function(deployer) {
+deployer
+    .then(() => setupRegistry(deployer))
+    .catch(error => {
+      console.log(error);
+      process.exit(1);
+    });
 };
 
 //module.exports = function(deployer) {
