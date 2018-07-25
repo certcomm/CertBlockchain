@@ -12,8 +12,8 @@ contract('CCRegistry test', async (accounts) => {
 
   beforeEach('setup contract for each test', async() => {
     registry = await CCRegistry.deployed();
-    storageInstance = await CThinBlockAnchorStorage.new();
-    opsInstance = await CThinBlockAnchorOps.new();
+    storageInstance = await CThinBlockAnchorStorage.deployed();
+    opsInstance = await CThinBlockAnchorOps.deployed();
     await storageInstance.injectRegistry(registry.address);
     await opsInstance.injectRegistry(registry.address);
   }),

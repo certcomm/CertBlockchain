@@ -9,10 +9,10 @@ contract('CThinBlockAnchorOps test', async (accounts) => {
   let tmail21DomainName="tmail21.com"
   beforeEach('setup contract for each test', async() => {
     registry = await CCRegistry.deployed();
-    let storageInstance = await CThinBlockAnchorStorage.new();
+    let storageInstance = await CThinBlockAnchorStorage.deployed();
     await storageInstance.injectRegistry(registry.address);
     await registry.registerContract("CThinBlockAnchorStorage", storageInstance.address);
-    let opsInstance = await CThinBlockAnchorOps.new();
+    let opsInstance = await CThinBlockAnchorOps.deployed();
     await opsInstance.injectRegistry(registry.address);
 
     await registry.registerContract("CThinBlockAnchorOps", opsInstance.address);
