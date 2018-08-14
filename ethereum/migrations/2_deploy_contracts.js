@@ -25,29 +25,3 @@ deployer
       process.exit(1);
     });
 };
-
-//module.exports = function(deployer) {
-//  deployer.deploy(CCRegistry).then(()=>{
-//    CCRegistry.deployed().then(function(registry) {
-//        deployer.deploy(CThinBlockAnchorStorage, registry.address).then(()=>{
-//            console.log("Deployed CThinBlockAnchorStorage");
-//            deployer.deploy(CThinBlockAnchorOps, registry.address).then(()=>{
-//                console.log("Deployed CThinBlockAnchorOps");
-//                CThinBlockAnchorStorage.deployed().then(function(cthinBlockAnchorStorage) {
-//                    registry.registerContract("CThinBlockAnchorStorage", cthinBlockAnchorStorage.address).then(()=>{
-//                        console.log("Registered CThinBlockAnchorStorage");
-//                        CThinBlockAnchorOps.deployed().then(function(cthinBlockAnchorOps) {
-//                            registry.registerContract("CThinBlockAnchorOps", cthinBlockAnchorOps.address).then(()=>{
-//                                console.log("Registered CThinBlockAnchorOps");
-//                                registry.addPermittedContract("CThinBlockAnchorStorage", "CThinBlockAnchorOps").then(()=>{
-//                                    console.log("Added permitted contract");
-//                                });
-//                            });
-//                        });
-//                    });
-//                });
-//            });
-//        });
-//    });
-//  });
-//};

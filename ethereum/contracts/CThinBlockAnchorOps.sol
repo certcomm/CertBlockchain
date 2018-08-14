@@ -10,6 +10,10 @@ contract CThinBlockAnchorOps is CCTrustable {
         return ICThinBlockAnchorStorage(getRegistry().getContractAddr("CThinBlockAnchorStorage"));
     }
 
+    function calculateGovernorDomainHash(string governorDomainName) private pure returns (bytes32) {
+        return keccak256(abi.encodePacked(governorDomainName));
+    }
+
     function addCThinBlockAnchor(uint16 shard, uint16 cblockNum, bytes32 cThinBlockHash, bytes32 merkleRootHash) public onlyGovernor  {
         bytes32 governorDomainHash = getRegistry().getGovernorDomainHash(msg.sender);
         getCThinBlockAnchorStorage().addCThinBlockAnchor(governorDomainHash, shard, cblockNum, cThinBlockHash, merkleRootHash);
@@ -21,18 +25,18 @@ contract CThinBlockAnchorOps is CCTrustable {
         getCThinBlockAnchorStorage().addExternalCThinBlockRef(governorDomainHash, shard, cblockNum, externalCThinBlockRefType, externalCThinBlockRef);
     }
 
-    function cThinBlockAnchorExists(uint16 shard, uint16 cblockNum) public onlyGovernor view returns (bool)  {
-        bytes32 governorDomainHash = getRegistry().getGovernorDomainHash(msg.sender);
+    function cThinBlockAnchorExists(string governorDomainName, uint16 shard, uint16 cblockNum) public view returns (bool)  {
+        bytes32 governorDomainHash = calculateGovernorDomainHash(governorDomainName);
         return getCThinBlockAnchorStorage().cThinBlockAnchorExists(governorDomainHash, shard, cblockNum);
     }
 
-    function getCThinBlockAnchor(uint16 shard, uint16 cblockNum) public onlyGovernor view returns (bytes32 cThinBlockHash, bytes32 merkleRootHash) {
-        bytes32 governorDomainHash = getRegistry().getGovernorDomainHash(msg.sender);
+    function getCThinBlockAnchor(string governorDomainName, uint16 shard, uint16 cblockNum) public view returns (bytes32 cThinBlockHash, bytes32 merkleRootHash) {
+        bytes32 governorDomainHash = calculateGovernorDomainHash(governorDomainName);
         return getCThinBlockAnchorStorage().getCThinBlockAnchor(governorDomainHash, shard, cblockNum);
     }
 
-    function getExternalCThinBlockRef(uint16 shard, uint16 cblockNum, string externalCThinBlockRefType) public onlyGovernor view returns (string externalCThinBlockRef) {
-        bytes32 governorDomainHash = getRegistry().getGovernorDomainHash(msg.sender);
+    function getExternalCThinBlockRef(string governorDomainName, uint16 shard, uint16 cblockNum, string externalCThinBlockRefType) public view returns (string externalCThinBlockRef) {
+        bytes32 governorDomainHash = calculateGovernorDomainHash(governorDomainName);
         return getCThinBlockAnchorStorage().getExternalCThinBlockRef(governorDomainHash, shard, cblockNum, externalCThinBlockRefType);
     }
 }
