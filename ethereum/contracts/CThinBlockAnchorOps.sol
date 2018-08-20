@@ -14,7 +14,7 @@ contract CThinBlockAnchorOps is CCTrustable {
         return keccak256(abi.encodePacked(governorDomainName));
     }
 
-    function addCThinBlockAnchor(uint16 shard, uint16 cblockNum, bytes32 cThinBlockHash, bytes32 merkleRootHash) public onlyGovernor  {
+    function addCThinBlockAnchor(uint16 shard, uint16 cblockNum, string cThinBlockHash, string merkleRootHash) public onlyGovernor  {
         bytes32 governorDomainHash = getRegistry().getGovernorDomainHash(msg.sender);
         getCThinBlockAnchorStorage().addCThinBlockAnchor(governorDomainHash, shard, cblockNum, cThinBlockHash, merkleRootHash);
         emit CThinBlockAnchorCreated(governorDomainHash, shard, cblockNum);
@@ -30,7 +30,7 @@ contract CThinBlockAnchorOps is CCTrustable {
         return getCThinBlockAnchorStorage().cThinBlockAnchorExists(governorDomainHash, shard, cblockNum);
     }
 
-    function getCThinBlockAnchor(string governorDomainName, uint16 shard, uint16 cblockNum) public view returns (bytes32 cThinBlockHash, bytes32 merkleRootHash) {
+    function getCThinBlockAnchor(string governorDomainName, uint16 shard, uint16 cblockNum) public view returns (string cThinBlockHash, string merkleRootHash) {
         bytes32 governorDomainHash = calculateGovernorDomainHash(governorDomainName);
         return getCThinBlockAnchorStorage().getCThinBlockAnchor(governorDomainHash, shard, cblockNum);
     }

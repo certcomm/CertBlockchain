@@ -26,8 +26,8 @@ contract('CThinBlockAnchorOps test', async (accounts) => {
   })
   ,
   it("should add cBlocknum 1", async () => {
-    let cblockHash = "703836587B41B5B7326E63C8AB492F61";
-    let merkleRootHash = "403836587B41B5B7326E63C8AB492F61";
+    let cblockHash = "88bcd5a4398c6dca70123030a2df3bebee3f85736c607292dd2751eeba8c7ea3";
+    let merkleRootHash = "7204098e42efb8f64fe874243bfd28e61f31520b288fa1a0cfac0a6a95db0000";
     let cblockNum = 1;
     let watcher = instance.CThinBlockAnchorCreated();
     assert.isFalse(await instance.cThinBlockAnchorExists(tmail21DomainName, shardNum,cblockNum, {from: tmail21Governor}));
@@ -38,24 +38,24 @@ contract('CThinBlockAnchorOps test', async (accounts) => {
     assert.equal(events[0].args.shard.valueOf(), shardNum);
     assert.equal(events[0].args.cblockNum.valueOf(), cblockNum);
     let cThinBlockAnchor = await instance.getCThinBlockAnchor(tmail21DomainName, shardNum,cblockNum, {from: tmail21Governor});
-    assert.equal(web3.toAscii(cThinBlockAnchor[0]), cblockHash);
-    assert.equal(web3.toAscii(cThinBlockAnchor[1]), merkleRootHash);
+    assert.equal(cThinBlockAnchor[0], cblockHash);
+    assert.equal(cThinBlockAnchor[1], merkleRootHash);
 
     await instance.addExternalCThinBlockRef(shardNum,cblockNum,"ipfs","fooUri1", {from: tmail21Governor});
     let externalCThinBlockRef = await instance.getExternalCThinBlockRef(tmail21DomainName, shardNum,cblockNum,"ipfs", {from: tmail21Governor});
     assert.equal(externalCThinBlockRef, "fooUri1");
   })
   ,it("should add cBlocknum 2", async () => {
-    let cblockHash = "703836587B41B5B7326E63C8AB492F61";
-    let merkleRootHash = "403836587B41B5B7326E63C8AB492F61";
+    let cblockHash = "88bcd5a4398c6dca70123030a2df3bebee3f85736c607292dd2751eeba8c7ea3";
+    let merkleRootHash = "7204098e42efb8f64fe874243bfd28e61f31520b288fa1a0cfac0a6a95db0000";
     let cblockNum = 2;
     assert.isFalse(await instance.cThinBlockAnchorExists(tmail21DomainName, shardNum,cblockNum, {from: tmail21Governor}));
 
     await instance.addCThinBlockAnchor(shardNum,cblockNum, cblockHash, merkleRootHash, {from: tmail21Governor});
     assert.isTrue(await instance.cThinBlockAnchorExists(tmail21DomainName, shardNum,cblockNum, {from: tmail21Governor}));
     let cThinBlockAnchor = await instance.getCThinBlockAnchor(tmail21DomainName, shardNum,cblockNum, {from: tmail21Governor});
-    assert.equal(web3.toAscii(cThinBlockAnchor[0]), cblockHash);
-    assert.equal(web3.toAscii(cThinBlockAnchor[1]), merkleRootHash);
+    assert.equal(cThinBlockAnchor[0], cblockHash);
+    assert.equal(cThinBlockAnchor[1], merkleRootHash);
 
     await instance.addExternalCThinBlockRef(shardNum,cblockNum,"ipfs","fooUri1", {from: tmail21Governor});
     await instance.addExternalCThinBlockRef(shardNum,cblockNum,"bitcoin","barUri1", {from: tmail21Governor});
