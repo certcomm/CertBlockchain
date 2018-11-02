@@ -8,7 +8,7 @@ async function setupContract(deployer) {
     console.log("storage address=" + cthinBlockAnchorStorage.address)
 
     console.log("Injecting registry in contract");
-    cthinBlockAnchorStorage.injectRegistry(registry.address);
+    await cthinBlockAnchorStorage.injectRegistry(registry.address);
     console.log("registering contract in registry")
     await registry.registerContract("CThinBlockAnchorStorage", cthinBlockAnchorStorage.address);
 }

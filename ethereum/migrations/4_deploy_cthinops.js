@@ -11,7 +11,7 @@ async function setupContract(deployer) {
     console.log("ops address=" + cthinBlockAnchorOps.address)
 
     console.log("Injecting registry in contract");
-    cthinBlockAnchorOps.injectRegistry(registry.address);
+    await cthinBlockAnchorOps.injectRegistry(registry.address);
 
     console.log("registering contract in registry")
     await registry.registerContract("CThinBlockAnchorOps", cthinBlockAnchorOps.address);
